@@ -20,12 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)f(dhhxmg9o0gbjn8m%t7gj%fbvwmn8%6ufuinyl2gu7rooe%o'
+import os
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-)f(dhhxmg9o0gbjn8m%t7gj%fbvwmn8%6ufuinyl2gu7rooe%o')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -53,6 +54,7 @@ CHANNEL_LAYERS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -85,15 +87,13 @@ WSGI_APPLICATION = 'transport.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'data',
-        'USER': 'root',
-        'PASSWORD': '#Raksha0712',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default='mysql://root:#Raksha0712@localhost:3306/data',
+        conn_max_age=600
+    )
 }
 
 
@@ -132,6 +132,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
