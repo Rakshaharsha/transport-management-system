@@ -5,6 +5,20 @@ class Command(BaseCommand):
     help = 'Creates 10 sample driver accounts'
 
     def handle(self, *args, **kwargs):
+        # Create admin user first
+        if not User.objects.filter(username='admin').exists():
+            admin = User.objects.create_superuser(
+                username='admin',
+                email='admin@transport.com',
+                password='admin123',
+                first_name='Admin',
+                last_name='User',
+                role='ADMIN'
+            )
+            self.stdout.write(self.style.SUCCESS('✓ Created admin user'))
+            self.stdout.write(self.style.SUCCESS('  Username: admin'))
+            self.stdout.write(self.style.SUCCESS('  Password: admin123\n'))
+        
         drivers_data = [
             {'username': 'driver1', 'email': 'driver1@example.com', 'first_name': 'Ramesh', 'last_name': 'Kumar', 'home_location': 'Koramangala'},
             {'username': 'driver2', 'email': 'driver2@example.com', 'first_name': 'Suresh', 'last_name': 'Rao', 'home_location': 'Indiranagar'},
