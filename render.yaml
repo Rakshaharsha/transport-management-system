@@ -1,0 +1,37 @@
+# Render Blueprint for Transport Management System
+
+services:
+  # Backend (Django)
+  - type: web
+    name: transport-backend
+    env: python
+    region: singapore
+    buildCommand: "cd transport && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "cd transport && gunicorn transport.wsgi:application"
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: transport-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.12.0
+
+  # Frontend (React)
+  - type: web
+    name: transport-frontend
+    env: static
+    region: singapore
+    buildCommand: "cd frontend/my_app && npm install && npm run build"
+    staticPublishPath: frontend/my_app/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://transport-backend.onrender.com
+
+databases:
+  - name: transport-db
+    region: singapore
+    plan: free
