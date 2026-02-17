@@ -150,13 +150,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://transport-frontend-bnyo.onrender.com",
 ]
-
-# Add frontend URL when deployed
-if not DEBUG:
-    CORS_ALLOWED_ORIGINS += [
-        "https://transport-frontend.onrender.com",
-    ]
 
 CORS_ALLOW_CREDENTIALS = True
 
