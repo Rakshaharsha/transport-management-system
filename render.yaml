@@ -21,9 +21,8 @@ services:
         value: 3.12.0
 
   # Frontend (React)
-  - type: web
+  - type: static
     name: transport-frontend
-    env: static
     region: singapore
     buildCommand: "cd frontend/my_app && npm install && npm run build"
     staticPublishPath: frontend/my_app/build
