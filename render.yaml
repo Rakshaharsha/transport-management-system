@@ -6,8 +6,8 @@ services:
     name: transport-backend
     env: python
     region: singapore
-    buildCommand: "cd transport && pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "cd transport && python manage.py migrate && gunicorn transport.wsgi:application"
+    buildCommand: "cd transport && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_default_admin"
+    startCommand: "cd transport && gunicorn transport.wsgi:application"
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
