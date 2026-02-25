@@ -747,7 +747,147 @@ const AdminDashboard = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <Card>
-                <h2 className="text-xl font-bold text-white mb-4">Drivers Management</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-white mb-1">Drivers Management</h2>
+                    <p className="text-sm text-gray-400">Manage driver accounts and assignments</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowDriverForm(!showDriverForm)}
+                    leftIcon={showDriverForm ? <X className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                    variant={showDriverForm ? 'secondary' : 'primary'}
+                  >
+                    {showDriverForm ? 'Cancel' : 'Add Driver'}
+                  </Button>
+                </div>
+
+                {/* Add Driver Form */}
+                {showDriverForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-6 p-6 bg-gray-800/50 rounded-lg border border-gray-700"
+                  >
+                    <h3 className="text-lg font-medium text-white mb-4">Create New Driver Account</h3>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      const driverData = {
+                        username: formData.get('username'),
+                        email: formData.get('email'),
+                        password: formData.get('password'),
+                        password2: formData.get('password2'),
+                        first_name: formData.get('first_name'),
+                        last_name: formData.get('last_name'),
+                        phone: formData.get('phone'),
+                        license_number: formData.get('license_number'),
+                        address: formData.get('address'),
+                        home_location: formData.get('home_location'),
+                        salary: formData.get('salary') || null,
+                        role: 'DRIVER'
+                      };
+
+                      try {
+                        await axiosInstance.post('/register/', driverData);
+                        alert('✅ Driver account created successfully!');
+                        setShowDriverForm(false);
+                        e.target.reset();
+                        loadDrivers();
+                        loadDashboard();
+                      } catch (error) {
+                        console.error('Error creating driver:', error);
+                        const errorMsg = error.response?.data?.username?.[0] ||
+                          error.response?.data?.email?.[0] ||
+                          error.response?.data?.phone?.[0] ||
+                          error.response?.data?.password?.[0] ||
+                          error.response?.data?.license_number?.[0] ||
+                          'Error creating driver account. Please check all fields.';
+                        alert('❌ ' + errorMsg);
+                      }
+                    }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        name="username"
+                        placeholder="Username (min 3 characters)"
+                        required
+                        minLength={3}
+                      />
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder="Email"
+                        required
+                      />
+                      <Input
+                        name="first_name"
+                        placeholder="First Name"
+                        required
+                      />
+                      <Input
+                        name="last_name"
+                        placeholder="Last Name"
+                        required
+                      />
+                      <Input
+                        name="phone"
+                        placeholder="Phone (10 digits)"
+                        required
+                        pattern="[0-9]{10}"
+                        title="Phone number must be exactly 10 digits"
+                        maxLength={10}
+                      />
+                      <Input
+                        name="license_number"
+                        placeholder="License Number"
+                        required
+                        minLength={5}
+                      />
+                      <Input
+                        name="password"
+                        type="password"
+                        placeholder="Password (min 8 characters)"
+                        required
+                        minLength={8}
+                      />
+                      <Input
+                        name="password2"
+                        type="password"
+                        placeholder="Confirm Password"
+                        required
+                        minLength={8}
+                      />
+                      <Input
+                        name="salary"
+                        type="number"
+                        placeholder="Salary (optional)"
+                        step="0.01"
+                      />
+                      <Input
+                        name="home_location"
+                        placeholder="Home Location"
+                      />
+                      <div className="md:col-span-2">
+                        <Input
+                          name="address"
+                          placeholder="Full Address"
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex gap-2">
+                        <Button type="submit" className="flex-1">
+                          Create Driver Account
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowDriverForm(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {drivers.map((driver) => (
                     <motion.button

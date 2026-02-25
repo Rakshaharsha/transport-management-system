@@ -1,25 +1,93 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
 from .models import User, Bus, Seat, Attendance, Notification, Query, Fee, EmergencyAlert, DriverLeave, DriverAttendance, StudentQuery
+import re
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(
+        write_only=True, 
+        required=True, 
+        validators=[validate_password],
+        min_length=8,
+        help_text="Password must be at least 8 characters long"
+    )
+    password2 = serializers.CharField(write_only=True, required=True, help_text="Confirm password")
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
+    phone = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{10}$',
+                message='Phone number must be exactly 10 digits',
+                code='invalid_phone'
+            )
+        ],
+        help_text="Phone number must be 10 digits"
+    )
+    email = serializers.EmailField(
+        required=True,
+        help_text="Valid email address required"
+    )
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name', 
                   'role', 'profile_photo', 'phone', 'address', 'driving_experience', 'salary', 
                   'license_number', 'driver_status', 'home_location', 'college_name', 'year', 'course', 
-                  'semester', 'academic_year', 'created_at']
+                  'semester', 'academic_year', 'gender', 'created_at']
         read_only_fields = ['id', 'created_at']
 
+    def validate_username(self, value):
+        """Validate username is at least 3 characters"""
+        if len(value) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters long")
+        if not re.match(r'^[a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError("Username can only contain letters, numbers, and underscores")
+        return value
+
+    def validate_email(self, value):
+        """Validate email format and uniqueness"""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists")
+        return value
+
+    def validate_phone(self, value):
+        """Additional phone validation"""
+        if value and not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain only digits")
+        if value and len(value) != 10:
+            raise serializers.ValidationError("Phone number must be exactly 10 digits")
+        return value
+
+    def validate_license_number(self, value):
+        """Validate driver license number"""
+        if value and len(value) < 5:
+            raise serializers.ValidationError("License number must be at least 5 characters")
+        return value
+
     def validate(self, attrs):
+        """Cross-field validation"""
+        # Password match validation
         if attrs.get('password') != attrs.get('password2'):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        # Role-specific validation
+        role = attrs.get('role')
+        
+        if role == 'DRIVER':
+            if not attrs.get('license_number'):
+                raise serializers.ValidationError({"license_number": "License number is required for drivers"})
+            if not attrs.get('phone'):
+                raise serializers.ValidationError({"phone": "Phone number is required for drivers"})
+        
+        if role in ['STUDENT', 'TEACHER']:
+            if not attrs.get('college_name'):
+                raise serializers.ValidationError({"college_name": "College name is required for students and teachers"})
+        
         return attrs
 
     def create(self, validated_data):
