@@ -5,7 +5,6 @@ A comprehensive web-based transport management system for educational institutio
 ## 🌟 Features
 
 ### For Students
-- Real-time bus location tracking
 - Seat booking and management
 - Distance-based fee calculation
 - Attendance history
