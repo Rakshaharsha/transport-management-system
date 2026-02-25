@@ -816,7 +816,7 @@ const AdminDashboard = () => {
                       };
 
                       try {
-                        await axiosInstance.post('/register/', driverData);
+                        await axiosInstance.post('/auth/register/', driverData);
                         alert('✅ Driver account created successfully!');
                         setShowDriverForm(false);
                         e.target.reset();
