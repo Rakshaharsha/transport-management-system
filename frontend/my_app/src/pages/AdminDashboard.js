@@ -773,17 +773,44 @@ const AdminDashboard = () => {
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.target);
+                      
+                      // Frontend validation
+                      const phone = formData.get('phone');
+                      const license = formData.get('license_number');
+                      const password = formData.get('password');
+                      const password2 = formData.get('password2');
+                      
+                      if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                        alert('❌ Phone number must be exactly 10 digits');
+                        return;
+                      }
+                      
+                      if (license.length < 5) {
+                        alert('❌ License number must be at least 5 characters');
+                        return;
+                      }
+                      
+                      if (password.length < 8) {
+                        alert('❌ Password must be at least 8 characters');
+                        return;
+                      }
+                      
+                      if (password !== password2) {
+                        alert('❌ Passwords do not match');
+                        return;
+                      }
+                      
                       const driverData = {
                         username: formData.get('username'),
                         email: formData.get('email'),
-                        password: formData.get('password'),
-                        password2: formData.get('password2'),
+                        password: password,
+                        password2: password2,
                         first_name: formData.get('first_name'),
                         last_name: formData.get('last_name'),
-                        phone: formData.get('phone'),
-                        license_number: formData.get('license_number'),
-                        address: formData.get('address'),
-                        home_location: formData.get('home_location'),
+                        phone: phone,
+                        license_number: license,
+                        address: formData.get('address') || '',
+                        home_location: formData.get('home_location') || '',
                         salary: formData.get('salary') || null,
                         role: 'DRIVER'
                       };
@@ -797,79 +824,128 @@ const AdminDashboard = () => {
                         loadDashboard();
                       } catch (error) {
                         console.error('Error creating driver:', error);
-                        const errorMsg = error.response?.data?.username?.[0] ||
-                          error.response?.data?.email?.[0] ||
-                          error.response?.data?.phone?.[0] ||
-                          error.response?.data?.password?.[0] ||
-                          error.response?.data?.license_number?.[0] ||
-                          'Error creating driver account. Please check all fields.';
+                        console.error('Error response:', error.response?.data);
+                        
+                        // Better error handling
+                        let errorMsg = 'Error creating driver account:\n\n';
+                        
+                        if (error.response?.data) {
+                          const errors = error.response.data;
+                          if (errors.username) errorMsg += `Username: ${errors.username[0]}\n`;
+                          if (errors.email) errorMsg += `Email: ${errors.email[0]}\n`;
+                          if (errors.phone) errorMsg += `Phone: ${errors.phone[0]}\n`;
+                          if (errors.password) errorMsg += `Password: ${errors.password[0]}\n`;
+                          if (errors.license_number) errorMsg += `License: ${errors.license_number[0]}\n`;
+                          if (errors.non_field_errors) errorMsg += errors.non_field_errors[0];
+                          
+                          if (errorMsg === 'Error creating driver account:\n\n') {
+                            errorMsg = JSON.stringify(errors, null, 2);
+                          }
+                        } else {
+                          errorMsg = 'Network error. Please check your connection.';
+                        }
+                        
                         alert('❌ ' + errorMsg);
                       }
                     }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        name="username"
-                        placeholder="Username (min 3 characters)"
-                        required
-                        minLength={3}
-                      />
-                      <Input
-                        name="email"
-                        type="email"
-                        placeholder="Email"
-                        required
-                      />
-                      <Input
-                        name="first_name"
-                        placeholder="First Name"
-                        required
-                      />
-                      <Input
-                        name="last_name"
-                        placeholder="Last Name"
-                        required
-                      />
-                      <Input
-                        name="phone"
-                        placeholder="Phone (10 digits)"
-                        required
-                        pattern="[0-9]{10}"
-                        title="Phone number must be exactly 10 digits"
-                        maxLength={10}
-                      />
-                      <Input
-                        name="license_number"
-                        placeholder="License Number"
-                        required
-                        minLength={5}
-                      />
-                      <Input
-                        name="password"
-                        type="password"
-                        placeholder="Password (min 8 characters)"
-                        required
-                        minLength={8}
-                      />
-                      <Input
-                        name="password2"
-                        type="password"
-                        placeholder="Confirm Password"
-                        required
-                        minLength={8}
-                      />
-                      <Input
-                        name="salary"
-                        type="number"
-                        placeholder="Salary (optional)"
-                        step="0.01"
-                      />
-                      <Input
-                        name="home_location"
-                        placeholder="Home Location"
-                      />
+                      <div>
+                        <input
+                          name="username"
+                          placeholder="Username (min 3 characters)"
+                          required
+                          minLength={3}
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="email"
+                          type="email"
+                          placeholder="Email"
+                          required
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="first_name"
+                          placeholder="First Name"
+                          required
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="last_name"
+                          placeholder="Last Name"
+                          required
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="phone"
+                          placeholder="Phone (exactly 10 digits)"
+                          required
+                          pattern="[0-9]{10}"
+                          title="Phone number must be exactly 10 digits"
+                          maxLength={10}
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="license_number"
+                          placeholder="License Number (min 5 chars)"
+                          required
+                          minLength={5}
+                          title="License number must be at least 5 characters"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="password"
+                          type="password"
+                          placeholder="Password (min 8 characters)"
+                          required
+                          minLength={8}
+                          title="Password must be at least 8 characters"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="password2"
+                          type="password"
+                          placeholder="Confirm Password"
+                          required
+                          minLength={8}
+                          title="Passwords must match"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="salary"
+                          type="number"
+                          placeholder="Salary (optional)"
+                          step="0.01"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          name="home_location"
+                          placeholder="Home Location (optional)"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
+                        />
+                      </div>
                       <div className="md:col-span-2">
-                        <Input
+                        <input
                           name="address"
-                          placeholder="Full Address"
+                          placeholder="Full Address (optional)"
+                          className="w-full rounded-md bg-gray-900 border border-gray-800 text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all duration-200 px-3 py-2 text-sm"
                         />
                       </div>
                       <div className="md:col-span-2 flex gap-2">
