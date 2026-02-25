@@ -42,7 +42,7 @@ class User(AbstractUser):
     driving_experience = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     hire_date = models.DateField(null=True, blank=True)  # Date when driver was hired
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    license_number = models.CharField(max_length=50, null=False, blank=False)
+    license_number = models.CharField(max_length=50, null=True, blank=True)
     driver_status = models.CharField(max_length=15, choices=DRIVER_STATUS_CHOICES, default='AVAILABLE', null=True, blank=True)
     home_location = models.CharField(max_length=200, null=True, blank=True)
     home_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
