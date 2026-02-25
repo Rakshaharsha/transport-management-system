@@ -826,20 +826,47 @@ const AdminDashboard = () => {
                         console.error('Error creating driver:', error);
                         console.error('Error response:', error.response?.data);
                         
+                        // Function to strip HTML tags from error messages
+                        const stripHtml = (html) => {
+                          const tmp = document.createElement('DIV');
+                          tmp.innerHTML = html;
+                          return tmp.textContent || tmp.innerText || '';
+                        };
+                        
                         // Better error handling
                         let errorMsg = 'Error creating driver account:\n\n';
                         
                         if (error.response?.data) {
                           const errors = error.response.data;
-                          if (errors.username) errorMsg += `Username: ${errors.username[0]}\n`;
-                          if (errors.email) errorMsg += `Email: ${errors.email[0]}\n`;
-                          if (errors.phone) errorMsg += `Phone: ${errors.phone[0]}\n`;
-                          if (errors.password) errorMsg += `Password: ${errors.password[0]}\n`;
-                          if (errors.license_number) errorMsg += `License: ${errors.license_number[0]}\n`;
-                          if (errors.non_field_errors) errorMsg += errors.non_field_errors[0];
+                          
+                          // Clean and format each error
+                          if (errors.username) {
+                            const cleanMsg = stripHtml(errors.username[0]);
+                            errorMsg += `Username: ${cleanMsg}\n`;
+                          }
+                          if (errors.email) {
+                            const cleanMsg = stripHtml(errors.email[0]);
+                            errorMsg += `Email: ${cleanMsg}\n`;
+                          }
+                          if (errors.phone) {
+                            const cleanMsg = stripHtml(errors.phone[0]);
+                            errorMsg += `Phone: ${cleanMsg}\n`;
+                          }
+                          if (errors.password) {
+                            const cleanMsg = stripHtml(errors.password[0]);
+                            errorMsg += `Password: ${cleanMsg}\n`;
+                          }
+                          if (errors.license_number) {
+                            const cleanMsg = stripHtml(errors.license_number[0]);
+                            errorMsg += `License: ${cleanMsg}\n`;
+                          }
+                          if (errors.non_field_errors) {
+                            const cleanMsg = stripHtml(errors.non_field_errors[0]);
+                            errorMsg += cleanMsg;
+                          }
                           
                           if (errorMsg === 'Error creating driver account:\n\n') {
-                            errorMsg = JSON.stringify(errors, null, 2);
+                            errorMsg = 'Please check all fields and try again.';
                           }
                         } else {
                           errorMsg = 'Network error. Please check your connection.';
